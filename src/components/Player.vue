@@ -18,9 +18,14 @@ export default {
     mounted() {
         this.init(this.url)
     },
+    watch:{
+      url:function(n){
+        this.changePlay(n)
+      }
+    },
     methods: {
         init(url){
-    
+
         // eslint-disable-next-line no-undef
         this.player =  new mpsPlayer({
           container: "MPSplayer", //播放器容器ID，必要参数
