@@ -43,7 +43,7 @@
         <span>{{ currentRow.videoUrl }}</span>
       </div>
       <div class="btn">
-        <a-button type="primary" danger @click="check(0)">不通过</a-button>
+        <a-button type="primary" danger @click="check(2)">不通过</a-button>
         <a-button type="primary" @click="check(1)">通过</a-button>
       </div>
     </div>
@@ -53,22 +53,30 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import Player from '@/components/Player.vue'
-import { getAuditList } from '@/api/index'
+import { getAuditList, changAuditStatue } from '@/api'
+import { formatDate } from '@/utils/index'
+import { message } from 'ant-design-vue';
 const columns1 = [
   {
     title: '名称',
     dataIndex: 'title',
     key: 'title',
+    width: 200,
+    ellipsis: true,
   },
   {
     title: '上传时间',
     dataIndex: 'createTime',
     key: 'createTime',
+    width: 200,
+    ellipsis: true,
   },
   {
     title: '视频时长',
     dataIndex: 'duration',
     key: 'duration',
+    width: 200,
+    ellipsis: true,
   },
   {
     title: '地址',
@@ -106,6 +114,7 @@ const columns2 = [
   },
 ];
 export default defineComponent({
+  name:'Home',
   components: {
     Player
   },
@@ -115,71 +124,75 @@ export default defineComponent({
       console.log('use value', searchValue);
       console.log('or use this.value', value.value);
     };
+    const success = () => {
+      message.success('This is a success message');
+    };
+    const error = () => {
+      message.error('This is an error message');
+    };
+    const warning = () => {
+      message.warning('This is a warning message');
+    };
+    let url = ref('')
     return {
       value,
       onSearch,
       columns1,
       columns2,
+      url,
+      success,
+      error,
+      warning,
     };
   },
   data(){
     return {
-      url: '',
       title: ['审核列表','审核记录'],
-      data : [
-        {
-          key: '1',
-          title: 'John Brown',
-          duration: 32,
-          createTime: 'New York No. 1 Lake Park',
-          videoUrl: 'sss',
-        },
-        {
-          key: '2',
-          title: 'John Brown',
-          duration: 32,
-          createTime: 'New York No. 1 Lake Park',
-          videoUrl: 'sss',
-        },
-        {
-          key: '3',
-          title: 'John Brown',
-          duration: 32,
-          createTime: 'New York No. 1 Lake Park',
-          videoUrl: 'sss',
-        },
-      ],
+      data : [],
       index: true,
-      currentRow: {},
-      columns: [],
+      currentRow: { id: ''},
+      subToken: '',
+      frameId: ''
     }
   },
   methods: {
     change() {
       this.index = !this.index,
       [this.title[0], this.title[1]] = [this.title[1], this.title[0]]
-      // const data = {
-      //   subToken: 1,
-      //   frameId: 2,
-      // }
-      // getAuditList(data).then( res => {
-      //   this.data = res.data
-      //   this.data.forEach((item:any,index) => {
-      //     item.key= index
-      //   })
-      //   console.log(this.data);
-      // })
+      const data = {
+        subToken: 1,
+        frameId: 1,
+        type: this.index ? 0 : 1,
+      }
+      getAuditList(data).then( (res: any) => {
+        if(res.flag === 100) {
+          this.data = res.data
+          this.data.forEach((item:any,index) => {
+          item.key= index
+          item.createTime = formatDate(item.createTime)
+        })
+        }
+      })
     },
-    customRow(record,index){
+    customRow(record){
       return {
-        onClick: (e) => {
+        onClick: () => {
           this.currentRow = record
           this.url = record.videoUrl
         }
       }
     },
-    check(data){
-      console.log(data)
+    check(index) {
+      const data = {
+        subToken: this.subToken,
+        id: this.currentRow.id,
+        status: index,
+      }
+      changAuditStatue().then( (res: any) => {
+        if(res.flag === 100) message.success('This is a success message');
+      }).catch(() => {
+        message.error('This is an error message');
+      })
     }
   },
 })
@@ -223,14 +236,13 @@ export default defineComponent({
         border-radius: 20px;
         line-height: 40px;
       }
-
     }
   }
   .main {
     width: 100%;
     height: 70%;
     padding: 0 20px;
-
+    overflow: hidden;
   }
 }
 #play {
@@ -281,8 +293,6 @@ export default defineComponent({
         margin-right: 20px;
       }
     }
-
-
   }
 }
 </style>

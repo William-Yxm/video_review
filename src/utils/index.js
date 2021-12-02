@@ -1,5 +1,4 @@
-export default {
-    formatDate(value) {
+export function formatDate(value) {
         if (typeof (value) == 'undefined') {
             return ''
         } else {
@@ -17,11 +16,10 @@ export default {
             s = s < 10 ? ('0' + s) : s
             return y + '-' + MM + '-' + d + ' ' + h + ':' + m + ':' + s
         }
-    },
-    time(time) {
+    }
+export function  time(time) {
         var h = Math.floor(time/3600) > 9 ? Math.floor(time/3600) : '0' + Math.floor(time/3600)
         var m = Math.floor(time%3600/60) > 9 ? Math.floor(time%3600/60) : '0' + Math.floor(time%3600/60)
         var s = Math.floor(time%60) > 9 ? Math.floor(time%60) : '0' + Math.floor(time%60)
         return h + ':' + m + ':' + s
-    },
-}
+    }
